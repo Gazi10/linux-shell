@@ -101,4 +101,3 @@ char *read_cmd(void) {
   // Return the input string
   return ptr;
 }
-
