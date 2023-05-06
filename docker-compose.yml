@@ -1,0 +1,11 @@
+services:
+  cs377-container:
+    image: nightdawnex/cs377
+    container_name: cs377-container
+    volumes:
+      - ./:/root/cs377
+      - vscode-server:/root/.vscode-server
+    tty: true
+
+volumes:
+  vscode-server:
