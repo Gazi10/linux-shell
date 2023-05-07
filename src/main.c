@@ -3,6 +3,9 @@
 #include <string.h>
 #include <errno.h>
 #include "shell.h"
+#include "source.h"
+#include "parser.h"
+#include "executor.h"
 
 int main(int argc, char **argv) {
   char *user_input;
@@ -31,8 +34,13 @@ int main(int argc, char **argv) {
       break;
     }
 
-    // Display the user's input command to the console
-    printf("%s\n", user_input);
+    // Execute the user's input command
+    struct source_s src;
+    src.buffer   = user_input;
+    src.bufsize  = strlen(user_input);
+    src.curpos   = INIT_SRC_POS;
+    parse_and_execute(&src);
+
     
     // Free the memory used by the user input
     free(user_input);
@@ -101,3 +109,52 @@ char *read_cmd(void) {
   // Return the input string
   return ptr;
 }
+
+/**
+ * This function reads commands from the input source, parses them, and
+ * executes them.
+ *
+ * @param src The input source to read commands from.
+ *
+ * @return Returns 1 if the execution was successful, 0 otherwise.
+ */
+int parse_and_execute(struct source_s *src)
+{
+    // Skip leading white spaces in the input source
+    skip_white_spaces(src);
+
+    // Tokenize the input source
+    struct token_s *tok = tokenize(src);
+
+    // If there are no more tokens, return 0 indicating failure
+    if(tok == &eof_token)
+    {
+        return 0;
+    }
+
+    // Loop over tokens and execute commands
+    while(tok && tok != &eof_token)
+    {
+        // Parse a simple command from the current token
+        struct node_s *cmd = parse_simple_command(tok);
+
+        // If parsing fails, break out of the loop
+        if(!cmd)
+        {
+            break;
+        }
+
+        // Execute the parsed command
+        do_simple_command(cmd);
+
+        // Free the memory used by the command node
+        free_node_tree(cmd);
+
+        // Tokenize the next command
+        tok = tokenize(src);
+    }
+
+    // Return 1 indicating successful execution
+    return 1;
+}
+
