@@ -3,8 +3,7 @@
 #define EOF             (-1)
 #define ERRCHAR         ( 0)
 #define INIT_SRC_POS    (-2)
-struct source_s
-{   
+struct source_s {   
     char *buffer;       /* the input text */
     long bufsize;       /* size of the input text */
     long  curpos;       /* absolute char position in source */

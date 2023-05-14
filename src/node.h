@@ -1,12 +1,10 @@
 #ifndef NODE_H
 #define NODE_H
-enum node_type_e
-{
+enum node_type_e {
     NODE_COMMAND,           /* simple command */
     NODE_VAR,               /* variable name (or simply, a word) */
 };
-enum val_type_e
-{
+enum val_type_e {
     VAL_SINT = 1,       /* signed int */
     VAL_UINT,           /* unsigned int */
     VAL_SLLONG,         /* signed long long */
@@ -16,8 +14,7 @@ enum val_type_e
     VAL_CHR,            /* char */
     VAL_STR,            /* str (char pointer) */
 };
-union symval_u
-{
+union symval_u {
     long               sint;
     unsigned long      uint;
     long long          sllong;
@@ -27,8 +24,7 @@ union symval_u
     char               chr;
     char              *str;
 };
-struct node_s
-{
+struct node_s {
     enum   node_type_e type;    /* type of this node */
     enum   val_type_e val_type; /* type of this node's val field */
     union  symval_u val;        /* value of this node */

@@ -12,8 +12,7 @@
  * @param type Type of the node to be created
  * @return Pointer to the newly created node or NULL if allocation fails
  */
-struct node_s *new_node(enum node_type_e type)
-{
+struct node_s *new_node(enum node_type_e type) {
     struct node_s *node = malloc(sizeof(struct node_s));
     if(!node) {
       return NULL;
@@ -31,22 +30,17 @@ struct node_s *new_node(enum node_type_e type)
  * @param parent Pointer to the parent node
  * @param child Pointer to the child node to be added
  */
-void add_child_node(struct node_s *parent, struct node_s *child)
-{
-    if(!parent || !child)
-    {
+void add_child_node(struct node_s *parent, struct node_s *child) {
+    if(!parent || !child) {
         return;
     }
-    if(!parent->first_child)
-    {
+    if(!parent->first_child) {
         parent->first_child = child;
     }
-    else
-    {
+    else {
         struct node_s *sibling = parent->first_child;
     
-        while(sibling->next_sibling)
-        {
+        while(sibling->next_sibling) {
             sibling = sibling->next_sibling;
         }
     
@@ -62,25 +56,20 @@ void add_child_node(struct node_s *parent, struct node_s *child)
  * @param node Pointer to the node whose string value is to be set
  * @param val String to be set as the node's value
  */
-void set_node_val_str(struct node_s *node, char *val)
-{
+void set_node_val_str(struct node_s *node, char *val) {
     node->val_type = VAL_STR;
-    if(!val)
-    {
+    if(!val) {
         node->val.str = NULL;
     }
-    else
-    {
+    else {
         char *val2 = malloc(strlen(val)+1);
     
-        if(!val2)
-        {
+        if(!val2) {
             node->val.str = NULL;
         }
-        else
-        {
-            strcpy(val2, val);
-            node->val.str = val2;
+        else {
+          strcpy(val2, val);
+          node->val.str = val2;
         }
     }
 }
@@ -90,25 +79,20 @@ void set_node_val_str(struct node_s *node, char *val)
  * 
  * @param node Pointer to the node to be freed
  */
-void free_node_tree(struct node_s *node)
-{
-    if(!node)
-    {
+void free_node_tree(struct node_s *node) {
+    if(!node) {
         return;
     }
     struct node_s *child = node->first_child;
     
-    while(child)
-    {
+    while(child) {
         struct node_s *next = child->next_sibling;
         free_node_tree(child);
         child = next;
     }
     
-    if(node->val_type == VAL_STR)
-    {
-        if(node->val.str)
-        {
+    if(node->val_type == VAL_STR) {
+        if(node->val.str) {
             free(node->val.str);
         }
     }

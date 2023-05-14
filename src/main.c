@@ -9,7 +9,7 @@
 
 int main(int argc, char **argv) {
   char *user_input;
-
+  init();
   while (1) {
     // Display a shell prompt to the user
     print_prompt1();

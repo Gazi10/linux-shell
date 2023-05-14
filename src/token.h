@@ -6,7 +6,7 @@ struct token_s
     int    text_len;            /* length of token text */
     char   *text;               /* token text */
 };
-/* the special EOF token, which indicates the end of input */
+/* the EOF token, which indicates the end of input */
 extern struct token_s eof_token;
 struct token_s *tokenize(struct source_s *src);
 void free_token(struct token_s *tok);

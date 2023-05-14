@@ -6,18 +6,14 @@
 #include "source.h"
 
 // This function takes a token and returns a node representing a simple command
-struct node_s *parse_simple_command(struct token_s *tok)
-{
-    // If there is no token, return NULL
-    if(!tok)
-    {
+struct node_s *parse_simple_command(struct token_s *tok) {
+    if(!tok) {
         return NULL;
     }
 
     // Create a new command node
     struct node_s *cmd = new_node(NODE_COMMAND);
-    if(!cmd)
-    {
+    if(!cmd) {
         // If failed to create a node, free the token and return NULL
         free_token(tok);
         return NULL;
@@ -27,19 +23,16 @@ struct node_s *parse_simple_command(struct token_s *tok)
     struct source_s *src = tok->src;
 
     // Loop through all the tokens in the source
-    do
-    {
+    do {
         // If the first character of the token is a newline character, stop looping
-        if(tok->text[0] == '\n')
-        {
+        if(tok->text[0] == '\n') {
             free_token(tok);
             break;
         }
 
         // Create a new node representing a word
         struct node_s *word = new_node(NODE_VAR);
-        if(!word)
-        {
+        if(!word) {
             // If failed to create a node, free the command node, token and return NULL
             free_node_tree(cmd);
             free_token(tok);

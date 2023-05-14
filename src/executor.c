@@ -10,27 +10,23 @@
 #include "executor.h"
 
 /* search for the executable file in directories specified by PATH env variable */
-char *search_path(char *file)
-{
+char *search_path(char *file) {
     /* get the PATH environment variable */
     char *PATH = getenv("PATH");
     char *p    = PATH;
     char *p2;
 
     /* loop through directories in the PATH */
-    while(p && *p)
-    {
+    while(p && *p) {
         /* find the end of the current directory */
         p2 = p;
-        while(*p2 && *p2 != ':')
-        {
+        while(*p2 && *p2 != ':') {
             p2++;
         }
 
         /* determine the length of the current directory */
         int plen = p2 - p;
-        if(!plen)
-        {
+        if(!plen) {
             /* the current directory is empty, so set its length to 1 */
             plen = 1;
         }
@@ -46,8 +42,7 @@ char *search_path(char *file)
         path[p2 - p] = '\0';
 
         /* add a trailing '/' character if necessary */
-        if(p2[-1] != '/')
-        {
+        if(p2[-1] != '/') {
             strcat(path, "/");
         }
 
@@ -56,15 +51,12 @@ char *search_path(char *file)
 
         /* check if the file exists and is a regular file */
         struct stat st;
-        if(stat(path, &st) == 0)
-        {
-            if(!S_ISREG(st.st_mode))
-            {
+        if(stat(path, &st) == 0) {
+            if(!S_ISREG(st.st_mode)) {
                 /* file exists but is not a regular file, so skip to next directory */
                 errno = ENOENT;
                 p = p2;
-                if(*p2 == ':')
-                {
+                if(*p2 == ':') {
                     p++;
                 }
                 continue;
@@ -72,8 +64,7 @@ char *search_path(char *file)
 
             /* allocate space for the full path to the file */
             p = malloc(strlen(path) + 1);
-            if(!p)
-            {
+            if(!p) {
                 /* memory allocation failed */
                 return NULL;
             }
@@ -82,12 +73,10 @@ char *search_path(char *file)
             strcpy(p, path);
             return p;
         }
-        else    /* file not found */
-        {
+        else {
             /* skip to next directory */
             p = p2;
-            if(*p2 == ':')
-            {
+            if(*p2 == ':') {
                 p++;
             }
         }
@@ -99,8 +88,7 @@ char *search_path(char *file)
 }
 
 // Executes a command with arguments
-int do_exec_cmd(int argc, char **argv)
-{
+int do_exec_cmd(int argc, char **argv) {
     // If the first argument contains a forward slash, use it as an absolute path and execute
     if (strchr(argv[0], '/')) {
         execv(argv[0], argv);
@@ -119,8 +107,7 @@ int do_exec_cmd(int argc, char **argv)
 }
 
 // Frees the memory used by argv
-static inline void free_argv(int argc, char **argv)
-{
+static inline void free_argv(int argc, char **argv) {
     if (!argc) {
         return;
     }
@@ -130,8 +117,7 @@ static inline void free_argv(int argc, char **argv)
 }
 
 // Executes a simple command represented by a tree node
-int do_simple_command(struct node_s *node)
-{
+int do_simple_command(struct node_s *node) {
     if (!node) {
         return 0;
     }
@@ -164,8 +150,17 @@ int do_simple_command(struct node_s *node)
         }
         child = child->next_sibling;
     }
+
     argv[argc] = NULL; // The last element of argv must be NULL
-    
+    int i = 0;
+    for( ; i < builtins_count; i++) {
+        if(strcmp(argv[0], builtins[i].name) == 0) {
+            builtins[i].func(argc, argv);
+            free_argv(argc, argv);
+            return 1;
+        }
+    }
+
     pid_t child_pid = 0;
     // Fork a child process to execute the command
     if ((child_pid = fork()) == 0) {
