@@ -4,12 +4,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <errno.h>
 
 #define MAX_COMMANDS 10
 #define MAX_LENGTH 100
 #define MAX_ALIAS_NAME_LENGTH 100
 #define MAX_ALIAS_VALUE_LENGTH 200
 #define MAX_ALIASES 100
+#define DEFAULT_NUM_LINES 10
+#define MAX_LINE_LENGTH 100
 
 int dump(int argc, char **argv) {
     dump_local_symtab();
@@ -112,4 +115,84 @@ int source(int argc, char **argv) {
   
   fclose(file);
   return 0;
+}
+
+/* Function to print the last n lines of a file */
+int tail(int argc, char **argv) {
+    int num_lines = DEFAULT_NUM_LINES;
+    char *filename;
+    FILE *fp;
+    char buffer[MAX_LINE_LENGTH];
+    char **lines;
+    int i, line_count = 0, start_index;
+    
+    /* Parse command line arguments */
+    if (argc > 1 && argv[1][0] == '-') {
+        /* Second argument is a flag, parse it */
+        if (sscanf(argv[1], "-%d", &num_lines) != 1) {
+            fprintf(stderr, "Invalid argument: %s\n", argv[1]);
+            return 1;
+        }
+        argc--;
+        argv++;
+    }
+    
+    /* Check if a filename was provided */
+    if (argc == 1) {
+        fprintf(stderr, "No filename provided\n");
+        return 1;
+    }
+    filename = argv[1];
+    
+    /* Open the file for reading */
+    fp = fopen(filename, "r");
+    if (fp == NULL) {
+        fprintf(stderr, "Error opening file: %s\n", strerror(errno));
+        return 1;
+    }
+    
+    /* Allocate memory for an array of pointers to lines */
+    lines = (char **)malloc(sizeof(char *) * num_lines);
+    if (lines == NULL) {
+        fprintf(stderr, "Error allocating memory: %s\n", strerror(errno));
+        fclose(fp);
+        return 1;
+    }
+    for (i = 0; i < num_lines; i++) {
+        lines[i] = NULL;
+    }
+    
+    /* Read the file one line at a time */
+    while (fgets(buffer, MAX_LINE_LENGTH, fp) != NULL) {
+        /* Allocate memory for a copy of the line */
+        lines[line_count % num_lines] = strdup(buffer);
+        if (lines[line_count % num_lines] == NULL) {
+            fprintf(stderr, "Error allocating memory: %s\n", strerror(errno));
+            fclose(fp);
+            free(lines);
+            return 1;
+        }
+        line_count++;
+    }
+    
+    /* Determine the starting index for printing lines */
+    if (line_count <= num_lines) {
+        start_index = 0;
+    } else {
+        start_index = line_count % num_lines;
+    }
+    
+    /* Print the last n lines */
+    for (i = 0; i < num_lines; i++) {
+        if (lines[(start_index + i) % num_lines] != NULL) {
+            printf("%s", lines[(start_index + i) % num_lines]);
+            free(lines[(start_index + i) % num_lines]);
+        }
+    }
+    
+    /* Clean up */
+    fclose(fp);
+    free(lines);
+    
+    return 0;
 }

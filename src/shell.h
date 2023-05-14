@@ -17,6 +17,7 @@ int pwd(int argc, char **argv);
 int cd(int argc, char **argv);
 int alias(int argc, char **argv);
 int source(int argc, char **argv);
+int tail(int argc, char **argv);
 
 /* struct for builtin utilities */
 struct builtin_s {

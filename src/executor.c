@@ -116,12 +116,11 @@ static inline void free_argv(int argc, char **argv) {
     }
 }
 
-// Executes a simple command represented by a tree node
 int do_simple_command(struct node_s *node) {
     if (!node) {
         return 0;
     }
-    // The first child of the simple command is the actual command to be executed
+    
     struct node_s *child = node->first_child;
     if (!child) {
         return 0;
@@ -129,17 +128,14 @@ int do_simple_command(struct node_s *node) {
     
     int argc = 0;
     long max_args = 255;
-    // Allocate an array to store the command's arguments
-    char *argv[max_args + 1]; // Keep 1 for the terminating NULL arg
+    char *argv[max_args + 1];
     char *str;
     
-    // Extract the arguments from the tree node and store them in the argv array
     while (child) {
         str = child->val.str;
         argv[argc] = malloc(strlen(str) + 1);
         
         if (!argv[argc]) {
-            // Free the argv array if memory allocation fails
             free_argv(argc, argv);
             return 0;
         }
@@ -151,7 +147,7 @@ int do_simple_command(struct node_s *node) {
         child = child->next_sibling;
     }
 
-    argv[argc] = NULL; // The last element of argv must be NULL
+    argv[argc] = NULL;
     int i = 0;
     for( ; i < builtins_count; i++) {
         if(strcmp(argv[0], builtins[i].name) == 0) {
@@ -162,25 +158,41 @@ int do_simple_command(struct node_s *node) {
     }
 
     pid_t child_pid = 0;
-    // Fork a child process to execute the command
     if ((child_pid = fork()) == 0) {
-        // Execute the command in the child process
-        do_exec_cmd(argc, argv);
-        // If execv() returns, there was an error
+        if (strchr(argv[argc - 1], '|') != NULL) {
+            // This is a piped command
+            int fd[2];
+            pipe(fd);
+            pid_t child_pid2 = fork();
+            if (child_pid2 == 0) {
+                close(fd[0]);
+                dup2(fd[1], STDOUT_FILENO);
+                close(fd[1]);
+                do_exec_cmd(argc - 1, argv);
+                exit(0);
+            } else {
+                close(fd[1]);
+                dup2(fd[0], STDIN_FILENO);
+                close(fd[0]);
+                argv[argc - 1] = NULL;
+                do_exec_cmd(argc - 2, argv);
+                exit(0);
+            }
+        } else {
+            do_exec_cmd(argc, argv);
+        }
         fprintf(stderr, "error: failed to execute command: %s\n", strerror(errno));
         if (errno == ENOEXEC) {
-            exit(126); // The command is not a valid executable format
+            exit(126);
         } else if (errno == ENOENT) {
-            exit(127); // The command was not found or is not executable
+            exit(127);
         } else {
             exit(EXIT_FAILURE);
         }
     } else if (child_pid < 0) {
-        // Forking failed
         fprintf(stderr, "error: failed to fork command: %s\n", strerror(errno));
         return 0;
     }
-    // Wait for the child process to terminate and free the argv array
     int status = 0;
     waitpid(child_pid, &status, 0);
     free_argv(argc, argv);
