@@ -34,8 +34,12 @@ To use the Linux Shell, follow these steps:
    ./shell
 
 ## Presentation
-The following link contains a presentation about project and a quick demo:
+Video/ Demo:
 https://drive.google.com/file/d/16E3pkdbvtsaiknKmusZVSzSijSQHB64_/view?usp=sharing
+Note: If the video is not playable on the google drive video player, download it and open the file using chrome.
+
+Slides:
+https://docs.google.com/presentation/d/1mmDXzEpo4vXf9DQApKq4u2LAKOexP49Ysy-90o0Mtew/edit?usp=sharing
    
 ## License
 This project is licensed under the MIT License.
